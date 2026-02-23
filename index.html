@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0010;
+  --deep: #120018;
+  --purple: #3a0070;
+  --violet: #6b21a8;
+  --coral: #c0392b;
+  --rose: #e8437a;
+  --gold: #d4a843;
+  --gold-light: #f0cc6e;
+  --gold-pale: #fff0b0;
+  --surface: rgba(58,0,112,0.25);
+  --border: rgba(212,168,67,0.2);
+  --text: #f5e8d0;
+  --muted: rgba(212,168,67,0.5);
+}
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 0% 50%, rgba(192,57,43,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 80% at 100% 30%, rgba(107,33,168,0.5) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 50% 100%, rgba(107,33,168,0.3) 0%, transparent 60%);
+  color: var(--text);
+  font-family: 'Montserrat', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 24px 60px;
+  overflow-x: hidden;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.header-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  font-weight: 400;
+}
+.header-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 40%, var(--gold-pale) 60%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-shadow: none;
+  filter: drop-shadow(0 0 20px rgba(212,168,67,0.4));
+  margin-bottom: 6px;
+}
+.header-sub {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(212,168,67,0.6);
+  font-weight: 300;
+}
+
+/* Layout: phone + controls side by side */
+.studio {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 1100px;
+}
+
+/* Phone mockup */
+.phone-wrap {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.phone {
+  width: 280px;
+  height: 560px;
+  background: #0a000f;
+  border-radius: 44px;
+  border: 2px solid rgba(212,168,67,0.4);
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,0.6),
+    0 0 0 8px rgba(212,168,67,0.12),
+    0 30px 80px rgba(0,0,0,0.8),
+    inset 0 0 60px rgba(107,33,168,0.15);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Phone screen gradient bg */
+.phone::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 20% 40%, rgba(192,57,43,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse 100% 80% at 80% 60%, rgba(107,33,168,0.4) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Notch */
+.phone-notch {
+  width: 90px;
+  height: 24px;
+  background: #0a000f;
+  border-radius: 0 0 18px 18px;
+  margin: 0 auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.phone-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.phone-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+
+canvas#waveCanvas {
+  width: 240px;
+  height: 180px;
+  display: block;
+  border-radius: 12px;
+  background: transparent;
+}
+
+/* Sparkle dots on phone */
+.sparkle {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--gold-light);
+  pointer-events: none;
+  animation: sparkle-pulse 3s ease-in-out infinite;
+}
+@keyframes sparkle-pulse {
+  0%,100%{opacity:0.1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.5)}
+}
+
+/* Phone bottom bar */
+.phone-home {
+  width: 90px;
+  height: 4px;
+  background: rgba(212,168,67,0.3);
+  border-radius: 2px;
+  margin: 0 auto 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* Audio bar (inside phone area) */
+.phone-audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  width: 240px;
+}
+.phone-audio-bar.hidden { display: none; }
+
+.play-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.play-btn:hover { background: rgba(212,168,67,0.15); }
+
+.audio-progress-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.audio-filename {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(212,168,67,0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+}
+.audio-timeline { display: flex; align-items: center; gap: 6px; }
+.audio-seek {
+  flex: 1;
+  appearance: none;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(212,168,67,0.2);
+  outline: none;
+  cursor: pointer;
+}
+.audio-seek::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+}
+.audio-time {
+  font-size: 9px;
+  color: rgba(212,168,67,0.4);
+  flex-shrink: 0;
+  font-family: 'Montserrat', monospace;
+}
+
+/* Record button */
+.record-btn {
+  margin-top: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border-radius: 30px;
+  border: 1px solid var(--gold);
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.record-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(212,168,67,0.15), rgba(107,33,168,0.1));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.record-btn:hover::before { opacity: 1; }
+.record-btn.recording {
+  border-color: var(--rose);
+  color: var(--rose);
+  animation: rec-pulse 1.2s ease-in-out infinite;
+}
+@keyframes rec-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(232,67,122,0.4)} 50%{box-shadow:0 0 0 6px rgba(232,67,122,0)} }
+
+/* Right panel — controls */
+.controls-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Input sources */
+.source-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.drop-zone {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  background: var(--surface);
+  backdrop-filter: blur(10px);
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color: rgba(212,168,67,0.5);
+  background: rgba(58,0,112,0.4);
+}
+.drop-zone input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.drop-icon { font-size: 20px; flex-shrink: 0; }
+.drop-text strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.drop-text small {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.mic-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  backdrop-filter: blur(10px);
+  min-width: 72px;
+}
+.mic-btn:hover { border-color: rgba(232,67,122,0.6); color: var(--rose); }
+.mic-btn.active { border-color: var(--rose); color: var(--rose); background: rgba(232,67,122,0.08); }
+.mic-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rose); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.card-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.ctrl-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+.ctrl-row.single { grid-template-columns: 1fr; }
+
+.ctrl {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ctrl label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(212,168,67,0.55);
+}
+.ctrl label span { color: var(--gold-light); }
+
+input[type=range] {
+  width: 100%;
+  appearance: none;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(212,168,67,0.15);
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--gold);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(212,168,67,0.6);
+  transition: transform 0.1s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+/* Color themes */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.theme-swatch {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.theme-swatch.active { border-color: var(--gold-light); transform: scale(1.15); }
+.theme-swatch:hover { transform: scale(1.1); }
+
+.custom-color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.custom-color-row label {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+input[type=color] {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 2px;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Mode buttons */
+.mode-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mode-btn {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.mode-btn.active, .mode-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(212,168,67,0.08);
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .studio { flex-direction: column; align-items: center; }
+  .controls-panel { width: 100%; max-width: 480px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Voice Visualizer Studio</div>
+  <div class="header-title">Wave Designer</div>
+  <div class="header-sub">Craft your sound</div>
+</div>
+
+<div class="studio">
+
+  <!-- Phone mockup -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="phone-notch"></div>
+
+      <!-- Sparkles -->
+      <div class="sparkle" style="width:3px;height:3px;top:30%;left:15%;animation-delay:0s"></div>
+      <div class="sparkle" style="width:2px;height:2px;top:20%;right:20%;animation-delay:1s"></div>
+      <div class="sparkle" style="width:4px;height:4px;top:60%;left:80%;animation-delay:0.5s"></div>
+      <div class="sparkle" style="width:2px;height:2px;top:75%;left:25%;animation-delay:1.5s"></div>
+      <div class="sparkle" style="width:3px;height:3px;top:45%;left:55%;animation-delay:2s"></div>
+
+      <div class="phone-content">
+        <div class="phone-label">Voice Preview</div>
+        <canvas id="waveCanvas"></canvas>
+
+        <!-- In-phone audio player -->
+        <div class="phone-audio-bar hidden" id="audioBar">
+          <button class="play-btn" id="playBtn">&#9654;</button>
+          <div class="audio-progress-wrap">
+            <div class="audio-filename" id="audioFilename">—</div>
+            <div class="audio-timeline">
+              <span class="audio-time" id="audioCurrentTime">0:00</span>
+              <input type="range" class="audio-seek" id="audioSeek" min="0" max="100" value="0">
+              <span class="audio-time" id="audioDuration">0:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="phone-home"></div>
+    </div>
+
+    <!-- Record / Download clip -->
+    <button class="record-btn" id="recordBtn">⏺ Record Clip</button>
+  </div>
+
+  <!-- Controls panel -->
+  <div class="controls-panel">
+
+    <!-- Source -->
+    <div class="source-row">
+      <div class="drop-zone" id="dropZone">
+        <input type="file" id="audioFile" accept="audio/*">
+        <div class="drop-icon">🎵</div>
+        <div class="drop-text">
+          <strong>Drop audio or click to browse</strong>
+          <small>MP3 · WAV · OGG · M4A</small>
+        </div>
+      </div>
+      <button class="mic-btn" id="micBtn">🎙<br>Mic</button>
+    </div>
+
+    <!-- Colors -->
+    <div class="card">
+      <div class="card-title">Color Theme</div>
+      <div class="theme-grid">
+        <!-- LIB inspired -->
+        <div class="theme-swatch active" style="background:linear-gradient(135deg,#d4a843,#e8437a)" data-colors="#d4a843,#e8437a" title="Gold Blush"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#9b59b6,#e8437a)" data-colors="#9b59b6,#e8437a" title="Violet Rose"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#c0392b,#9b59b6)" data-colors="#c0392b,#9b59b6" title="Crimson Violet"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#f0cc6e,#ffffff)" data-colors="#f0cc6e,#ffffff" title="Gold White"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#e8437a,#ff8fa3)" data-colors="#e8437a,#ff8fa3" title="Rose Pink"></div>
+        <!-- Bonus palettes -->
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#00ffa3,#00c6ff)" data-colors="#00ffa3,#00c6ff" title="Neon Teal"></div>
+        <div class="theme-swatch" style="background:linear-gradient(135deg,#a29bfe,#fd79a8)" data-colors="#a29bfe,#fd79a8" title="Lavender Pink"></div>
+      </div>
+      <div class="custom-color-row">
+        <label>Custom</label>
+        <input type="color" id="colorA" value="#d4a843">
+        <input type="color" id="colorB" value="#e8437a">
+        <div class="ctrl" style="flex:1">
+          <label>Opacity <span id="opacityVal">90%</span></label>
+          <input type="range" id="opacity" min="10" max="100" value="90">
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode -->
+    <div class="card">
+      <div class="card-title">Wave Mode</div>
+      <div class="mode-row">
+        <button class="mode-btn active" data-mode="bars">Bars</button>
+        <button class="mode-btn" data-mode="wave">Wave</button>
+        <button class="mode-btn" data-mode="mirror">Mirror</button>
+        <button class="mode-btn" data-mode="radial">Radial</button>
+      </div>
+    </div>
+
+    <!-- Shape -->
+    <div class="card">
+      <div class="card-title">Shape</div>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <label>Bar Count <span id="barCountVal">32</span></label>
+          <input type="range" id="barCount" min="8" max="80" value="32">
+        </div>
+        <div class="ctrl">
+          <label>Amplitude <span id="amplitudeVal">80%</span></label>
+          <input type="range" id="amplitude" min="10" max="100" value="80">
+        </div>
+        <div class="ctrl">
+          <label>Smoothness <span id="smoothnessVal">0.4</span></label>
+          <input type="range" id="smoothness" min="0" max="10" value="4">
+        </div>
+        <div class="ctrl">
+          <label>Bar Width <span id="barWidthVal">60%</span></label>
+          <input type="range" id="barWidth" min="10" max="95" value="60">
+        </div>
+        <div class="ctrl">
+          <label>Rounding <span id="roundingVal">6px</span></label>
+          <input type="range" id="rounding" min="0" max="20" value="6">
+        </div>
+        <div class="ctrl">
+          <label>Speed <span id="speedVal">4</span></label>
+          <input type="range" id="speed" min="1" max="12" value="4">
+        </div>
+      </div>
+    </div>
+
+    <!-- FX -->
+    <div class="card">
+      <div class="card-title">Effects</div>
+      <div class="ctrl-row">
+        <div class="ctrl">
+          <label>Glow <span id="glowVal">10px</span></label>
+          <input type="range" id="glow" min="0" max="40" value="10">
+        </div>
+        <div class="ctrl">
+          <label>Fill <span id="fillVal">30%</span></label>
+          <input type="range" id="fill" min="0" max="100" value="30">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+
+let cfg = {
+  barCount: 32, amplitude: 80, speed: 4,
+  smoothness: 0.4, barWidth: 0.6, rounding: 6,
+  colorA: '#d4a843', colorB: '#e8437a',
+  opacity: 0.9, mode: 'bars', glow: 10, fill: 0.3,
+};
+
+let audioCtx = null, analyser = null, freqData = null;
+let audioSource = 'demo';
+let audioEl = null, micStream = null, micSourceNode = null, fileSourceNode = null;
+let phase = 0;
+
+// Canvas sizing — match physical pixels of phone canvas display
+function resize() {
+  canvas.width = 240 * window.devicePixelRatio;
+  canvas.height = 180 * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+resize();
+
+// ── Audio ──────────────────────────────────────────────
+function ensureAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+function createAnalyser() {
+  ensureAudioCtx();
+  if (analyser) { try { analyser.disconnect(); } catch(e){} }
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  analyser.smoothingTimeConstant = 0.82;
+  freqData = new Uint8Array(analyser.frequencyBinCount);
+  analyser.connect(audioCtx.destination);
+  return analyser;
+}
+
+document.getElementById('audioFile').addEventListener('change', e => {
+  if (e.target.files[0]) loadAudioFile(e.target.files[0]);
+});
+
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f && f.type.startsWith('audio/')) loadAudioFile(f);
+});
+
+function loadAudioFile(file) {
+  stopMic();
+  if (audioEl) { audioEl.pause(); audioEl.src = ''; }
+  audioEl = new Audio();
+  audioEl.src = URL.createObjectURL(file);
+  audioEl.crossOrigin = 'anonymous';
+  ensureAudioCtx();
+  const an = createAnalyser();
+  if (fileSourceNode) { try { fileSourceNode.disconnect(); } catch(e){} }
+  fileSourceNode = audioCtx.createMediaElementSource(audioEl);
+  fileSourceNode.connect(an);
+  audioSource = 'file';
+  document.getElementById('audioFilename').textContent = file.name;
+  document.getElementById('audioBar').classList.remove('hidden');
+  audioEl.addEventListener('loadedmetadata', () => {
+    document.getElementById('audioDuration').textContent = fmtTime(audioEl.duration);
+    document.getElementById('audioSeek').max = Math.floor(audioEl.duration);
+  });
+  audioEl.addEventListener('timeupdate', () => {
+    document.getElementById('audioCurrentTime').textContent = fmtTime(audioEl.currentTime);
+    if (!audioEl.seeking) document.getElementById('audioSeek').value = Math.floor(audioEl.currentTime);
+  });
+  audioEl.addEventListener('ended', () => { document.getElementById('playBtn').innerHTML = '&#9654;'; });
+  audioEl.play();
+  document.getElementById('playBtn').innerHTML = '&#9646;&#9646;';
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s/60), sec = Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+document.getElementById('playBtn').addEventListener('click', () => {
+  if (!audioEl) return;
+  ensureAudioCtx();
+  if (audioEl.paused) { audioEl.play(); document.getElementById('playBtn').innerHTML='&#9646;&#9646;'; }
+  else { audioEl.pause(); document.getElementById('playBtn').innerHTML='&#9654;'; }
+});
+document.getElementById('audioSeek').addEventListener('input', e => {
+  if (audioEl) audioEl.currentTime = +e.target.value;
+});
+
+const micBtn = document.getElementById('micBtn');
+micBtn.addEventListener('click', async () => {
+  if (audioSource === 'mic') { stopMic(); return; }
+  try {
+    if (audioEl) { audioEl.pause(); document.getElementById('audioBar').classList.add('hidden'); }
+    audioSource = 'demo';
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    micStream = stream;
+    ensureAudioCtx();
+    const an = createAnalyser();
+    if (micSourceNode) { try { micSourceNode.disconnect(); } catch(e){} }
+    micSourceNode = audioCtx.createMediaStreamSource(stream);
+    micSourceNode.connect(an);
+    try { an.disconnect(audioCtx.destination); } catch(e){}
+    audioSource = 'mic';
+    micBtn.classList.add('active');
+    micBtn.innerHTML = '<span class="mic-dot"></span><br>Stop';
+  } catch(err) { alert('Mic access denied.'); }
+});
+
+function stopMic() {
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  if (micSourceNode) { try { micSourceNode.disconnect(); } catch(e){} micSourceNode = null; }
+  if (audioSource === 'mic') {
+    audioSource = 'demo'; analyser = null; freqData = null;
+    micBtn.classList.remove('active');
+    micBtn.innerHTML = '🎙<br>Mic';
+  }
+}
+
+// ── Recording / Download ──────────────────────────────
+let mediaRecorder = null;
+let recordedChunks = [];
+let isRecording = false;
+const recordBtn = document.getElementById('recordBtn');
+
+recordBtn.addEventListener('click', () => {
+  if (!isRecording) startRecording();
+  else stopRecording();
+});
+
+function startRecording() {
+  recordedChunks = [];
+  const stream = canvas.captureStream(30);
+
+  // If audio is playing, mix it in
+  if (audioEl && !audioEl.paused && audioCtx) {
+    try {
+      const dest = audioCtx.createMediaStreamDestination();
+      if (fileSourceNode) fileSourceNode.connect(dest);
+      const tracks = [...stream.getVideoTracks(), ...dest.stream.getAudioTracks()];
+      const mixed = new MediaStream(tracks);
+      mediaRecorder = new MediaRecorder(mixed, { mimeType: getSupportedMimeType() });
+    } catch(e) {
+      mediaRecorder = new MediaRecorder(stream, { mimeType: getSupportedMimeType() });
+    }
+  } else {
+    mediaRecorder = new MediaRecorder(stream, { mimeType: getSupportedMimeType() });
+  }
+
+  mediaRecorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+  mediaRecorder.onstop = exportVideo;
+  mediaRecorder.start();
+  isRecording = true;
+  recordBtn.textContent = '⏹ Stop & Save';
+  recordBtn.classList.add('recording');
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+  isRecording = false;
+  recordBtn.textContent = '⏺ Record Clip';
+  recordBtn.classList.remove('recording');
+}
+
+function getSupportedMimeType() {
+  const types = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'];
+  for (const t of types) { if (MediaRecorder.isTypeSupported(t)) return t; }
+  return '';
+}
+
+function exportVideo() {
+  const blob = new Blob(recordedChunks, { type: 'video/webm' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wave-clip.webm';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Bar heights ────────────────────────────────────────
+function getBarHeights() {
+  if (analyser && freqData && audioSource !== 'demo') {
+    analyser.getByteFrequencyData(freqData);
+    const out = [];
+    const n = cfg.barCount, binCount = freqData.length;
+    for (let i = 0; i < n; i++) {
+      const start = Math.floor((i/n)*binCount*0.75);
+      const end = Math.floor(((i+1)/n)*binCount*0.75);
+      let sum = 0;
+      for (let b = start; b <= end; b++) sum += freqData[b];
+      out.push((sum/Math.max(1,end-start+1)/255) * (cfg.amplitude/100));
+    }
+    return out;
+  }
+  const heights = [];
+  for (let i = 0; i < cfg.barCount; i++) {
+    const t = i / cfg.barCount;
+    const h =
+      Math.sin(phase*0.05*cfg.speed + t*6.28*1.5)*0.4 +
+      Math.sin(phase*0.03*cfg.speed + t*6.28*3.1+1)*0.3 +
+      Math.sin(phase*0.07*cfg.speed + t*6.28*0.8+2)*0.3;
+    heights.push(Math.abs(h)*(cfg.amplitude/100));
+  }
+  return heights;
+}
+
+// ── Draw ───────────────────────────────────────────────
+function draw() {
+  const W = 240, H = 180;
+  ctx.clearRect(0, 0, W, H);
+
+  // Subtle gradient bg on canvas
+  const bg = ctx.createRadialGradient(W*0.3, H*0.5, 0, W*0.5, H*0.5, W*0.8);
+  bg.addColorStop(0, 'rgba(58,0,112,0.2)');
+  bg.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  const heights = getBarHeights();
+  const rgbA = hexToRgb(cfg.colorA), rgbB = hexToRgb(cfg.colorB);
+
+  if (cfg.mode === 'bars') drawBars(W, H, heights, rgbA, rgbB);
+  else if (cfg.mode === 'wave') drawWave(W, H, heights, rgbA, rgbB);
+  else if (cfg.mode === 'mirror') drawMirror(W, H, heights, rgbA, rgbB);
+  else if (cfg.mode === 'radial') drawRadial(W, H, heights, rgbA, rgbB);
+
+  phase++;
+  requestAnimationFrame(draw);
+}
+
+function hexToRgb(hex) {
+  return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`;
+}
+function lerpColor(a, b, t) {
+  const [rA,gA,bA]=a.split(',').map(Number), [rB,gB,bB]=b.split(',').map(Number);
+  return `${Math.round(rA+(rB-rA)*t)},${Math.round(gA+(gB-gA)*t)},${Math.round(bA+(bB-bA)*t)}`;
+}
+function makeGrad(W, H, rgbA, rgbB) {
+  const g = ctx.createLinearGradient(0, H, W, 0);
+  g.addColorStop(0, `rgba(${rgbA},${cfg.opacity})`);
+  g.addColorStop(1, `rgba(${rgbB},${cfg.opacity})`);
+  return g;
+}
+
+function drawBars(W, H, heights, rgbA, rgbB) {
+  ctx.shadowBlur = cfg.glow; ctx.shadowColor = cfg.colorB;
+  const tw = W/cfg.barCount, bw = tw*cfg.barWidth, gap=(tw-bw)/2;
+  for (let i = 0; i < cfg.barCount; i++) {
+    const x = i*tw+gap;
+    const bh = Math.max(2, heights[i]*H*0.85);
+    const y = (H-bh)/2;
+    const t = i/Math.max(1,cfg.barCount-1);
+    const rgb = lerpColor(rgbA, rgbB, t);
+    if (cfg.fill > 0) {
+      ctx.fillStyle = `rgba(${rgb},${cfg.fill*0.2})`;
+      ctx.fillRect(x, 0, bw, y);
+      ctx.fillRect(x, y+bh, bw, H-y-bh);
+    }
+    ctx.fillStyle = `rgba(${rgb},${cfg.opacity})`;
+    const r = Math.min(cfg.rounding, bw/2, bh/2);
+    ctx.beginPath(); ctx.roundRect(x, y, bw, bh, r); ctx.fill();
+  }
+  ctx.shadowBlur = 0;
+}
+
+function smoothPath(pts) {
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  if (cfg.smoothness === 0) { for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]); return; }
+  for (let i = 0; i < pts.length-1; i++) {
+    const cx=(pts[i][0]+pts[i+1][0])/2, cy=(pts[i][1]+pts[i+1][1])/2;
+    ctx.quadraticCurveTo(pts[i][0], pts[i][1], cx, cy);
+  }
+  ctx.lineTo(pts[pts.length-1][0], pts[pts.length-1][1]);
+}
+
+function drawWave(W, H, heights, rgbA, rgbB) {
+  ctx.shadowBlur = cfg.glow; ctx.shadowColor = cfg.colorB;
+  const pts = heights.map((h,i) => [(i/(heights.length-1))*W, H/2-h*H/2*0.85]);
+  smoothPath(pts); ctx.strokeStyle = makeGrad(W,H,rgbA,rgbB); ctx.lineWidth = 2.5; ctx.stroke();
+  if (cfg.fill > 0) {
+    smoothPath(pts); ctx.lineTo(W,H/2); ctx.lineTo(0,H/2); ctx.closePath();
+    const fg = ctx.createLinearGradient(0,0,0,H);
+    fg.addColorStop(0,`rgba(${rgbB},${cfg.fill*0.5})`);
+    fg.addColorStop(1,`rgba(${rgbA},0)`);
+    ctx.fillStyle=fg; ctx.fill();
+  }
+  ctx.shadowBlur=0;
+}
+
+function drawMirror(W, H, heights, rgbA, rgbB) {
+  ctx.shadowBlur = cfg.glow; ctx.shadowColor = cfg.colorB;
+  const top = heights.map((h,i) => [(i/(heights.length-1))*W, H/2-h*H/2*0.85]);
+  const bot = heights.map((h,i) => [(i/(heights.length-1))*W, H/2+h*H/2*0.85]);
+  const grad = makeGrad(W,H,rgbA,rgbB);
+  for (const pts of [top,bot]) { smoothPath(pts); ctx.strokeStyle=grad; ctx.lineWidth=2.5; ctx.stroke(); }
+  if (cfg.fill > 0) {
+    smoothPath(top);
+    for (let i=bot.length-1;i>=0;i--) ctx.lineTo(bot[i][0],bot[i][1]);
+    ctx.closePath();
+    const fg = ctx.createLinearGradient(0,H/2-H*0.4,0,H/2+H*0.4);
+    fg.addColorStop(0,`rgba(${rgbB},${cfg.fill*0.4})`);
+    fg.addColorStop(0.5,`rgba(${rgbA},${cfg.fill*0.15})`);
+    fg.addColorStop(1,`rgba(${rgbB},${cfg.fill*0.4})`);
+    ctx.fillStyle=fg; ctx.fill();
+  }
+  ctx.shadowBlur=0;
+}
+
+function drawRadial(W, H, heights, rgbA, rgbB) {
+  const cx=W/2, cy=H/2;
+  const minR=Math.min(W,H)*0.12, maxR=Math.min(W,H)*0.42;
+  ctx.shadowBlur=cfg.glow; ctx.shadowColor=cfg.colorB;
+  const n=heights.length;
+  for (let i=0;i<n;i++) {
+    const angle=(i/n)*Math.PI*2-Math.PI/2;
+    const rgb=lerpColor(rgbA,rgbB,i/n);
+    const barLen=minR+heights[i]*(maxR-minR);
+    ctx.beginPath();
+    ctx.moveTo(cx+Math.cos(angle)*minR,cy+Math.sin(angle)*minR);
+    ctx.lineTo(cx+Math.cos(angle)*barLen,cy+Math.sin(angle)*barLen);
+    ctx.strokeStyle=`rgba(${rgb},${cfg.opacity})`;
+    ctx.lineWidth=Math.max(1,(W/n)*cfg.barWidth*0.8);
+    ctx.lineCap='round'; ctx.stroke();
+  }
+  ctx.shadowBlur=0;
+}
+
+// ── Controls ───────────────────────────────────────────
+function bindRange(id, key, transform, display) {
+  const el = document.getElementById(id);
+  const valEl = document.getElementById(id+'Val');
+  el.addEventListener('input', () => {
+    cfg[key] = transform ? transform(+el.value) : +el.value;
+    if (valEl && display) valEl.textContent = display(+el.value);
+  });
+}
+
+bindRange('barCount','barCount',null,v=>v);
+bindRange('amplitude','amplitude',null,v=>v+'%');
+bindRange('speed','speed',null,v=>v);
+bindRange('smoothness','smoothness',v=>v/10,v=>(v/10).toFixed(1));
+bindRange('barWidth','barWidth',v=>v/100,v=>v+'%');
+bindRange('rounding','rounding',null,v=>v+'px');
+bindRange('opacity','opacity',v=>v/100,v=>v+'%');
+bindRange('glow','glow',null,v=>v+'px');
+bindRange('fill','fill',v=>v/100,v=>v+'%');
+
+document.getElementById('colorA').addEventListener('input', e => cfg.colorA = e.target.value);
+document.getElementById('colorB').addEventListener('input', e => cfg.colorB = e.target.value);
+
+document.querySelectorAll('.theme-swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.theme-swatch').forEach(s => s.classList.remove('active'));
+    sw.classList.add('active');
+    const [a,b] = sw.dataset.colors.split(',');
+    cfg.colorA = a; cfg.colorB = b;
+    document.getElementById('colorA').value = a;
+    document.getElementById('colorB').value = b;
+  });
+});
+
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    cfg.mode = btn.dataset.mode;
+  });
+});
+
+draw();
+</script>
+</body>
+</html>
